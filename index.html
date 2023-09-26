@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator | Codespace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet" />
+    <style>
+      /* ------------------------------ reset ------------------------------ */
+      * {
+        margin: 0em;
+        padding: 0em;
+        font-family: "Orbitron", sans-serif;
+        box-sizing: border-box;
+      }
+
+      /* ------------------------------ colors ------------------------------ */
+      section {
+        background: SeaGreen;
+      }
+      article {
+        background: rgb(25, 25, 25);
+      }
+      form legend span {
+        color: dimgray;
+      }
+      form button {
+        color: #fff;
+        background: dimgray;
+      }
+      form button:hover {
+        color: #fff;
+        background: gray;
+      }
+      form code {
+        background: cornsilk;
+      }
+      form code input#display {
+        background: cornsilk;
+        color: mediumseagreen;
+      }
+      form button.operator {
+        background: SeaGreen;
+      }
+      form button.operator:hover {
+        background: mediumseagreen;
+      }
+      form button.ac {
+        background: Tomato;
+      }
+      form button.ac:hover {
+        background: red;
+      }
+      form button.del {
+        background: darkorange;
+      }
+      form button.del:hover {
+        background: orange;
+      }
+      form button.equal {
+        background: cornflowerblue;
+      }
+      form button.equal:hover {
+        background: DodgerBlue;
+      }
+
+      /* ------------------------------ animations ------------------------------ */
+      form button:active {
+        transform: translateY(4px);
+      }
+
+      /* ------------------------------ structure ------------------------------ */
+      section {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      article {
+        padding: 1em;
+        border-radius: 10px;
+      }
+
+      form legend {
+        display: flex;
+        justify-content: space-between;
+      }
+      form input,
+      article form button {
+        border: 0;
+        outline: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        box-shadow: -4px -4px 5px rgba(200, 200, 200, 0.2), 2px 2px 5px rgba(230, 230, 230, 0.2);
+        font-size: 20px;
+        cursor: pointer;
+        margin: 10px;
+      }
+      form code {
+        display: flex;
+        justify-content: flex-end;
+        margin: 20px 0;
+        border: 2px solid;
+        border-radius: 10px;
+      }
+      form code input#display {
+        font-weight: bold;
+      }
+      form code input,
+      form code button {
+        text-align: right;
+        flex: 1;
+        font-size: 45px;
+        box-shadow: none;
+      }
+      form button.equal,
+      form button.ac {
+        width: 145px;
+      }
+      form button.zero {
+        width: 60px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section>
+      <article>
+        <form>
+          <legend>
+            <span>EdCal</span>
+            <span>Fx23-BASIC</span>
+          </legend>
+          <code>
+            <input type="text" name="display" id="display" value="0" readonly />
+          </code>
+
+          <div>
+            <button type="button" onclick="clearDisplay()" class="ac operator">CLEAR</button>
+            <button type="button" onclick="deleteLast()" class="del operator">DEL</button>
+            <button type="button" onclick="appendToDisplay('/')" class="operator">&divide;</button>
+          </div>
+
+          <div>
+            <button type="button" onclick="appendToDisplay('7')">7</button>
+            <button type="button" onclick="appendToDisplay('8')">8</button>
+            <button type="button" onclick="appendToDisplay('9')">9</button>
+            <button type="button" onclick="appendToDisplay('*')" class="operator">&times;</button>
+          </div>
+
+          <div>
+            <button type="button" onclick="appendToDisplay('4')">4</button>
+            <button type="button" onclick="appendToDisplay('5')">5</button>
+            <button type="button" onclick="appendToDisplay('6')">6</button>
+            <button type="button" onclick="appendToDisplay('-')" class="operator">-</button>
+          </div>
+
+          <div>
+            <button type="button" onclick="appendToDisplay('1')">1</button>
+            <button type="button" onclick="appendToDisplay('2')">2</button>
+            <button type="button" onclick="appendToDisplay('3')">3</button>
+            <button type="button" onclick="appendToDisplay('+')" class="operator">+</button>
+          </div>
+
+          <div>
+            <button type="button" onclick="appendToDisplay('0')" class="zero">0</button>
+            <button type="button" onclick="appendToDisplay('.')">.</button>
+            <button type="button" onclick="calculate()" class="equal operator">=</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+    <script>
+      // Initialize flag to monitor whether operator has already been added to display
+      let operatorAdded = false;
+      // Variable to remember if the next number input should clear the previous number
+      let clearNextNumber = false;
+
+      // Reference the input with id 'display'
+      const display = document.getElementById("display");
+
+      // Function to initialize the display with "0"
+      const initializeDisplay = () => {
+        display.value = "0";
+      };
+
+      // Function to clear the display and reset the operator flag
+      const clearDisplay = () => {
+        initializeDisplay(); // Set the display back to "0"
+        operatorAdded = false;
+        clearNextNumber = false; // Reset the clearNextNumber flag
+      };
+
+      // Function to delete the last character from the display
+      const deleteLast = () => {
+        let currentValue = display.value;
+        if (currentValue.length > 1) {
+          display.value = currentValue.slice(0, -1);
+        } else {
+          initializeDisplay(); // Set the display back to "0"
+        }
+      };
+
+      // Function to append a value to the display
+      const appendToDisplay = (value) => {
+        if (clearNextNumber) {
+          initializeDisplay(); // Clear the previous number by setting the display back to "0"
+          clearNextNumber = false; // Reset the flag
+        }
+
+        if (value.match(/[0-9]/)) {
+          // Check if display will exceed 10 digits
+          if (display.value.replace(/[-+*/]/g, "").length + value.length > 10) {
+            alert("Calculator digit limit exceeded! Unfortunately, your calculation exceeds the limit for free users. Clear the display using the Clear button or press C on your keyboard, then try again or contact support for a premium calculator.");
+            return; // Prevent more digits from being added if the limit is reached
+          }
+        }
+
+        if (operatorAdded && value === ".") {
+          // If an operator was just added and the user enters a decimal point, display "0."
+          display.value = "0.";
+        } else {
+          // Append the value to the display using augmented addition
+          if (display.value === "0" && value !== ".") {
+            display.value = value; // Replace "0" with the new value if it's not a decimal point
+          } else {
+            display.value += value;
+          }
+        }
+
+        operatorAdded = false; // Reset the operator flag
+      };
+
+      // Function to calculate the expression in the display while also clearing the operatorAdded flag
+      const calculate = () => {
+        // Remove leading "0" from the display value
+        let expression = display.value.replace(/^0+/, "");
+
+        // Evaluate the calculation in the cleaned expression
+        let result = eval(expression);
+
+        // Check if the result is a number greater than 4 digits
+        if (typeof result === "number" && result.toString().length > 4) {
+          result = parseFloat(result.toFixed(4)); // Convert to float and round to 4 decimal places
+        }
+
+        initializeDisplay(); // Set the display back to "0"
+        display.value = result.toString(); // Display the result as a string
+
+        // Set the flag to clear the next number input
+        clearNextNumber = true;
+        operatorAdded = false; // Reset the operator flag since the calculation has been performed
+      };
+
+      // Add keyboard event listeners for keyboard support
+      document.addEventListener("keypress", (event) => {
+        const key = event.key;
+        switch (key) {
+          case "0":
+          case "1":
+          case "2":
+          case "3":
+          case "4":
+          case "5":
+          case "6":
+          case "7":
+          case "8":
+          case "9":
+          case ".":
+          case "/":
+          case "*":
+          case "+":
+          case "-":
+            appendToDisplay(key);
+            break;
+          case "=":
+            calculate();
+            break;
+          case "C":
+          case "c":
+            clearDisplay();
+            break;
+          default:
+          // Ignore other key presses
+        }
+      });
+
+      // Initialize the display with "0" when the page loads
+      initializeDisplay();
+    </script>
+  </body>
+</html>
